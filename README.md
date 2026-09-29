@@ -14,18 +14,60 @@ book-scanner-mvp/
 └── README.md
 ```
 
-## Backend API: verified status
+## Backend API
 
-The backend currently exposes two routes. The search route is a connectivity stub; it does not search for books yet.
+The backend uses Google Books API for public book search and details. Put the API key in `backend/.env` as `GOOGLE_BOOKS_API_KEY`; never commit the real key. The `.env.example` file contains placeholders only. The MVP does not require a database: book metadata is fetched from Google Books on demand.
 
-| Method | Path | Current behavior |
-|---|---|---|
-| `GET` | `/api/health` | Returns HTTP 200 with `status: "healthy"` and a timestamp. |
-| `POST` | `/api/v1/search` | Returns HTTP 200 with `{ "success": true, "message": "Server is working!" }`. The handler does not validate `query` or perform a search. |
-| `GET` | `/api/v1/books/:id` | Not implemented; requests currently return 404. |
-| `POST` | `/api/v1/ocr/process` | Not implemented; requests currently return 404. |
+| Method | Path | Request | Behavior |
+|---|---|---|---|
+| `GET` | `/api/health` | — | Returns status, timestamp, uptime, and configured port. |
+| `POST` | `/api/v1/books/search` | JSON `{ "query": "The Great Gatsby", "type": "title", "maxResults": 10, "startIndex": 0 }` | Searches books. `query` is required (1–200 chars); `type` may be `any`, `title`, `author`, or `isbn`; `maxResults` is 1–40. |
+| `POST` | `/api/v1/search` | Same as search above | Backward-compatible alias for `/api/v1/books/search`. |
+| `GET` | `/api/v1/books/:id` | Google Books volume ID in the path | Returns one normalized book or a JSON 404. |
 
-### Start and verify the backend
+Successful search response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "query": "The Great Gatsby",
+    "totalItems": 1,
+    "books": [
+      {
+        "id": "volume-id",
+        "title": "The Great Gatsby",
+        "authors": ["F. Scott Fitzgerald"],
+        "description": "Book description",
+        "averageRating": 4.2,
+        "ratingsCount": 25,
+        "imageUrl": "https://books.google.com/...",
+        "price": { "amount": 12.5, "currencyCode": "USD" }
+      }
+    ]
+  }
+}
+```
+
+Errors use a consistent JSON shape:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "query is required and must be 1 to 200 characters."
+  }
+}
+```
+
+Common status codes: `400` invalid input/JSON, `404` unknown route or book, `413` body over 1 MB, `502` provider error, `503` missing API key or provider unavailable, and `500` unexpected server error. Provider responses and stack traces are not returned to clients.
+
+OCR is intentionally on-device with Google ML Kit in Flutter. The app sends the recognized title/author text to the search endpoint; there is no backend `/api/v1/ocr/process` route in this MVP.
+
+CORS is enabled for local development. Restrict allowed origins before deploying publicly.
+
+## Run locally on Windows PowerShell
 
 From the repository root:
 
@@ -35,37 +77,41 @@ npm install
 npm run dev
 ```
 
-The app reads `PORT` and defaults to port `5000`. The current local server responds on port `8000`. Note that the root `.env.example` currently names this setting `BACKEND_PORT`; that name does not override the `PORT` variable read by `backend/app.js`.
+The backend reads `PORT` first, then the legacy `BACKEND_PORT`, then defaults to `5000`. The sample config uses `PORT=8000`. Create `backend/.env` locally and set `GOOGLE_BOOKS_API_KEY` there. Do not commit that file.
 
-Check health:
+Health check:
 
 ```powershell
 Invoke-RestMethod http://localhost:8000/api/health
 ```
 
-Check the search stub:
+Search by title:
 
 ```powershell
-$body = @{ query = "The Hobbit" } | ConvertTo-Json
+$body = @{
+  query = "The Great Gatsby"
+  type = "title"
+  maxResults = 10
+} | ConvertTo-Json
+
 Invoke-RestMethod `
-  -Uri "http://localhost:8000/api/v1/search" `
+  -Uri "http://localhost:8000/api/v1/books/search" `
   -Method Post `
   -ContentType "application/json" `
   -Body $body
 ```
 
-Expected search-stub response:
+Get book details (replace the sample ID with a real ID returned by search):
 
-```json
-{
-  "success": true,
-  "message": "Server is working!"
-}
+```powershell
+Invoke-RestMethod "http://localhost:8000/api/v1/books/volume-id"
 ```
 
-### Verified behavior and remaining work
+Run backend tests:
 
-- CORS is enabled with the Express `cors()` default configuration. Local preflight checks confirmed origin `*`, allowed `POST`, and allowed the `content-type` request header.
-- Malformed JSON returns HTTP 400, but currently uses Express's default HTML error page and exposes a parser stack trace. Add centralized JSON error handling before production use.
-- Book lookup and OCR routes must be implemented before clients can call them.
-- Replace the search stub with input validation and a real book-search implementation before integrating search results in Flutter.
+```powershell
+cd backend
+npm test
+```
+
+Tests use a mocked Google Books response and do not need a real API key or network access.
