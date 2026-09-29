@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>NSCameraUsageDescription</key>
+    <string>Take a photo of a book cover to identify it.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Choose a book cover photo to identify it.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -28,13 +32,25 @@
 	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
+    <key>NSCameraUsageDescription</key>
+    <string>Take a photo of a book cover to identify it.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Choose a book cover photo to identify it.</string>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<false/>
 		<key>UISceneConfigurations</key>
 		<dict>
+    <key>NSCameraUsageDescription</key>
+    <string>Take a photo of a book cover to identify it.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Choose a book cover photo to identify it.</string>
 			<key>UIWindowSceneSessionRoleApplication</key>
 			<array>
 				<dict>
+    <key>NSCameraUsageDescription</key>
+    <string>Take a photo of a book cover to identify it.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Choose a book cover photo to identify it.</string>
 					<key>UISceneClassName</key>
 					<string>UIWindowScene</string>
 					<key>UISceneConfigurationName</key>

@@ -1,17 +1,9 @@
-# flutter_app
+# Book Scanner Flutter app
 
-A new Flutter project.
+Flutter client for Book Scanner MVP. Take or choose a book cover, read its text locally with Google ML Kit on Android/iOS, search the Express API, and review matching books.
 
-## Getting Started
+Run from this frontend directory with flutter pub get, then flutter run. The Android emulator uses http://10.0.2.2:8000. Other targets default to http://localhost:8000. For a physical phone, pass --dart-define=API_BASE_URL=http://YOUR_COMPUTER_LAN_IP:8000 and make sure both devices share Wi-Fi.
 
-This project is a starting point for a Flutter application.
+OCR runs on-device; cover photos are not uploaded. On web/desktop, use typed title search. The backend needs its Google Books key in backend/.env.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Verify with flutter analyze and flutter test.
